@@ -94,7 +94,9 @@ struct OptimizeVectorTransferPass
     // to transfer reads.
     OwningRewritePatternList patterns(&getContext());
     mlir::vector::populateCastAwayVectorLeadingOneDimPatterns(patterns);
-    patterns.add<TransposeUnitDimToShapeCast>(&getContext());
+    patterns.add<TransposeUnitDimToShapeCast>(
+        &getContext());
+    mlir::vector::populateVectorTransferRankReductionPatterns(pattenrs);
     (void)applyPatternsAndFoldGreedily(funcOp, std::move(patterns));
     // Workaround, run loop invariant code motion before hoist redudant vector
     // transfer to workaround a bug upstream.
@@ -116,3 +118,4 @@ std::unique_ptr<OperationPass<FuncOp>> createOptimizeVectorTransferPass() {
 
 }  // namespace iree_compiler
 }  // namespace mlir
+
