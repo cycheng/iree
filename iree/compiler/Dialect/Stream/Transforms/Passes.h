@@ -80,6 +80,12 @@ std::unique_ptr<OperationPass<mlir::ModuleOp>> createOutlineConstantsPass();
 std::unique_ptr<OperationPass<mlir::ModuleOp>> createConvertToStreamPass();
 
 //===----------------------------------------------------------------------===//
+// Placement/affinity management
+//===----------------------------------------------------------------------===//
+
+std::unique_ptr<OperationPass<>> createEncodeTensorsPass();
+
+//===----------------------------------------------------------------------===//
 // Diagnostics
 //===----------------------------------------------------------------------===//
 
