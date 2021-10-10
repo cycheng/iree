@@ -22,6 +22,7 @@ iree_lit_test_suite(
             "outline_constants.mlir",
             "propagate_timepoints.mlir",
             "refine_usage.mlir",
+            "schedule_allocation.mlir",
             "schedule_execution.mlir",
             "schedule_waves.mlir",
         ],
