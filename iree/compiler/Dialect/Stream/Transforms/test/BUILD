@@ -21,6 +21,8 @@ iree_lit_test_suite(
             "encode_tensors.mlir",
             "outline_constants.mlir",
             "refine_usage.mlir",
+            "schedule_execution.mlir",
+            "schedule_waves.mlir",
         ],
         include = ["*.mlir"],
     ),

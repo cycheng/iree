@@ -87,6 +87,13 @@ std::unique_ptr<OperationPass<>> createEncodeTensorsPass();
 std::unique_ptr<OperationPass<mlir::ModuleOp>> createRefineUsagePass();
 
 //===----------------------------------------------------------------------===//
+// Stream formation and scheduling
+//===----------------------------------------------------------------------===//
+
+std::unique_ptr<OperationPass<>> createScheduleExecutionPass();
+std::unique_ptr<OperationPass<>> createScheduleWavesPass();
+
+//===----------------------------------------------------------------------===//
 // Diagnostics
 //===----------------------------------------------------------------------===//
 
