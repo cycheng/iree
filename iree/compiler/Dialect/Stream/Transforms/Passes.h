@@ -93,6 +93,8 @@ std::unique_ptr<OperationPass<mlir::ModuleOp>> createRefineUsagePass();
 std::unique_ptr<OperationPass<>> createScheduleExecutionPass();
 std::unique_ptr<OperationPass<>> createScheduleWavesPass();
 
+std::unique_ptr<OperationPass<mlir::ModuleOp>> createPropagateTimepointsPass();
+
 //===----------------------------------------------------------------------===//
 // Diagnostics
 //===----------------------------------------------------------------------===//

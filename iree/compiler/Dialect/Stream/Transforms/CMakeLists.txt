@@ -22,6 +22,7 @@ iree_cc_library(
     "OutlineConstants.cpp"
     "PassDetail.h"
     "Passes.cpp"
+    "PropagateTimepoints.cpp"
     "RefineUsage.cpp"
     "ScheduleExecution.cpp"
     "ScheduleWaves.cpp"
