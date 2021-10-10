@@ -84,6 +84,7 @@ std::unique_ptr<OperationPass<mlir::ModuleOp>> createConvertToStreamPass();
 //===----------------------------------------------------------------------===//
 
 std::unique_ptr<OperationPass<>> createEncodeTensorsPass();
+std::unique_ptr<OperationPass<mlir::ModuleOp>> createRefineUsagePass();
 
 //===----------------------------------------------------------------------===//
 // Diagnostics

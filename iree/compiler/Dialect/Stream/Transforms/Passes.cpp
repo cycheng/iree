@@ -109,6 +109,16 @@ void buildStreamAsyncPassPipeline(OpPassManager &passManager,
   passManager.addNestedPass<mlir::FuncOp>(
       IREE::Stream::createEncodeTensorsPass());
   addCleanupPatterns(passManager);
+
+  //----------------------------------------------------------------------------
+  // Stream formation and scheduling
+  //----------------------------------------------------------------------------
+
+  // Refine lifetime of all resources across the module.
+  // We do this after scheduling execution so that we know how the resources
+  // move across devices. We do it before scheduling waves as lifetime doesn't
+  // change and it makes the IR cleaner.
+  passManager.addPass(IREE::Stream::createRefineUsagePass());
 }
 
 //===----------------------------------------------------------------------===//

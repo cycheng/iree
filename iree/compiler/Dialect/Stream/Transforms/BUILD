@@ -21,6 +21,7 @@ cc_library(
         "OutlineConstants.cpp",
         "PassDetail.h",
         "Passes.cpp",
+        "RefineUsage.cpp",
         "VerifyLowerings.cpp",
     ],
     hdrs = [

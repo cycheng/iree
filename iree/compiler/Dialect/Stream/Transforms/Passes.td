@@ -45,6 +45,14 @@ def EncodeTensors :
   }];
 }
 
+def RefineUsage :
+    Pass<"iree-stream-refine-usage", "mlir::ModuleOp"> {
+  let summary = "Refines resource usage bits and inserts transfers where appropriate.";
+  let constructor = [{
+    mlir::iree_compiler::IREE::Stream::createRefineUsagePass()
+  }];
+}
+
 //===----------------------------------------------------------------------===//
 // Diagnostics
 //===----------------------------------------------------------------------===//

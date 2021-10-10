@@ -20,6 +20,7 @@ iree_lit_test_suite(
             "convert_to_stream.mlir",
             "encode_tensors.mlir",
             "outline_constants.mlir",
+            "refine_usage.mlir",
         ],
         include = ["*.mlir"],
     ),
