@@ -19,6 +19,8 @@ cc_library(
         "ConvertToStream.cpp",
         "EncodeTensors.cpp",
         "LayoutSlices.cpp",
+        "FoldUniformOperands.cpp",
+        "FuseDispatchBindings.cpp",
         "OutlineConstants.cpp",
         "PassDetail.h",
         "Passes.cpp",
@@ -30,6 +32,7 @@ cc_library(
         "ScheduleAllocation.cpp",
         "ScheduleExecution.cpp",
         "ScheduleWaves.cpp",
+        "SpecializeDispatches.cpp",
         "VerifyLowerings.cpp",
     ],
     hdrs = [

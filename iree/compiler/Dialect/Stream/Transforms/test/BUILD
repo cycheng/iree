@@ -19,6 +19,8 @@ iree_lit_test_suite(
         [
             "convert_to_stream.mlir",
             "encode_tensors.mlir",
+            "fold_uniform_operands.mlir",
+            "fuse_dispatch_bindings.mlir",
             "layout_slices.mlir",
             "outline_constants.mlir",
             "pack_allocations.mlir",
@@ -29,6 +31,7 @@ iree_lit_test_suite(
             "schedule_allocation.mlir",
             "schedule_execution.mlir",
             "schedule_waves.mlir",
+            "specialize_dispatches.mlir",
         ],
         include = ["*.mlir"],
     ),

@@ -19,6 +19,8 @@ iree_cc_library(
   SRCS
     "ConvertToStream.cpp"
     "EncodeTensors.cpp"
+    "FoldUniformOperands.cpp"
+    "FuseDispatchBindings.cpp"
     "LayoutSlices.cpp"
     "OutlineConstants.cpp"
     "PackAllocations.cpp"
@@ -31,6 +33,7 @@ iree_cc_library(
     "ScheduleAllocation.cpp"
     "ScheduleExecution.cpp"
     "ScheduleWaves.cpp"
+    "SpecializeDispatches.cpp"
     "VerifyLowerings.cpp"
   DEPS
     ::PassesIncGen

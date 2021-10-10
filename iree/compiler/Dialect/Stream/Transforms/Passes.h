@@ -95,6 +95,12 @@ std::unique_ptr<OperationPass<>> createScheduleWavesPass();
 
 std::unique_ptr<OperationPass<mlir::ModuleOp>> createPropagateTimepointsPass();
 
+//===----------------------------------------------------------------------===//
+// Allocation and command issuing
+//===----------------------------------------------------------------------===//
+
+std::unique_ptr<OperationPass<>> createScheduleAllocationPass();
+
 std::unique_ptr<OperationPass<>> createPackConstantsPass();
 std::unique_ptr<OperationPass<>> createPackAllocationsPass();
 std::unique_ptr<OperationPass<>> createLayoutSlicesPass();
@@ -102,10 +108,19 @@ std::unique_ptr<OperationPass<>> createLayoutSlicesPass();
 std::unique_ptr<OperationPass<mlir::ModuleOp>> createPropagateSubviewsPass();
 
 //===----------------------------------------------------------------------===//
-// Allocation and command issuing
+// Stream memoization
 //===----------------------------------------------------------------------===//
 
-std::unique_ptr<OperationPass<>> createScheduleAllocationPass();
+// TODO(benvanik): outline streams (ala dispatch regions).
+// TODO(benvanik): deduplicate outlined streams.
+
+//===----------------------------------------------------------------------===//
+// Dispatch optimization
+//===----------------------------------------------------------------------===//
+
+std::unique_ptr<OperationPass<mlir::ModuleOp>> createFoldUniformOperandsPass();
+std::unique_ptr<OperationPass<mlir::ModuleOp>> createFuseDispatchBindingsPass();
+std::unique_ptr<OperationPass<mlir::ModuleOp>> createSpecializeDispatchesPass();
 
 //===----------------------------------------------------------------------===//
 // Diagnostics
