@@ -16,7 +16,10 @@ iree_lit_test_suite(
   SRCS
     "convert_to_stream.mlir"
     "encode_tensors.mlir"
+    "layout_slices.mlir"
     "outline_constants.mlir"
+    "pack_allocations.mlir"
+    "pack_constants.mlir"
     "propagate_timepoints.mlir"
     "refine_usage.mlir"
     "schedule_allocation.mlir"

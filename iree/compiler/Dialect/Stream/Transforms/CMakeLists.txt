@@ -19,7 +19,10 @@ iree_cc_library(
   SRCS
     "ConvertToStream.cpp"
     "EncodeTensors.cpp"
+    "LayoutSlices.cpp"
     "OutlineConstants.cpp"
+    "PackAllocations.cpp"
+    "PackConstants.cpp"
     "PassDetail.h"
     "Passes.cpp"
     "PropagateTimepoints.cpp"

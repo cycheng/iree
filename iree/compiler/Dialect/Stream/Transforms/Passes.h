@@ -95,6 +95,10 @@ std::unique_ptr<OperationPass<>> createScheduleWavesPass();
 
 std::unique_ptr<OperationPass<mlir::ModuleOp>> createPropagateTimepointsPass();
 
+std::unique_ptr<OperationPass<>> createPackConstantsPass();
+std::unique_ptr<OperationPass<>> createPackAllocationsPass();
+std::unique_ptr<OperationPass<>> createLayoutSlicesPass();
+
 //===----------------------------------------------------------------------===//
 // Allocation and command issuing
 //===----------------------------------------------------------------------===//

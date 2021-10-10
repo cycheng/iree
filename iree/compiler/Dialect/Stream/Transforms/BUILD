@@ -18,9 +18,12 @@ cc_library(
     srcs = [
         "ConvertToStream.cpp",
         "EncodeTensors.cpp",
+        "LayoutSlices.cpp",
         "OutlineConstants.cpp",
         "PassDetail.h",
         "Passes.cpp",
+        "PackAllocations.cpp",
+        "PackConstants.cpp",
         "PropagateTimepoints.cpp",
         "RefineUsage.cpp",
         "ScheduleAllocation.cpp",
