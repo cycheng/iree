@@ -25,6 +25,7 @@ namespace iree_compiler {
 namespace IREE {
 namespace HAL {
 
+// TODO(#7277): remove when switched to streams (happens there now).
 class PackAllocationsPass
     : public PassWrapper<PackAllocationsPass, OperationPass<FuncOp>> {
  public:
@@ -123,13 +124,15 @@ class PackAllocationsPass
 
     Value offset = baseOffset;
     for (auto &slice : slices) {
-      auto sliceSize = align(loc, slice.dynamicSize, rangeAlignment, builder);
+      auto sliceSize =
+          IREE::Util::align(loc, slice.dynamicSize, rangeAlignment, builder);
       slice.packedOffset.replaceAllUsesWith(offset);
-      offset = align(loc, builder.createOrFold<AddIOp>(loc, offset, sliceSize),
-                     offsetAlignment, builder);
+      offset = IREE::Util::align(
+          loc, builder.createOrFold<AddIOp>(loc, offset, sliceSize),
+          offsetAlignment, builder);
     }
 
-    return align(loc, offset, rangeAlignment, builder);
+    return IREE::Util::align(loc, offset, rangeAlignment, builder);
   }
 
   // Packs a set of statically-sized slices by greedy strip packing.
@@ -174,7 +177,7 @@ class PackAllocationsPass
       int64_t staticSize =
           dyn_cast<ConstantIndexOp>(slice.dynamicSize.getDefiningOp())
               .getValue();
-      int64_t alignedSize = align(staticSize, rangeAlignment);
+      int64_t alignedSize = IREE::Util::align(staticSize, rangeAlignment);
 
       // Iterate through reservations (sorted by ascending offset) and identify
       // gaps in which the slice will fit. To reduce wastage we want to find the
@@ -189,7 +192,8 @@ class PackAllocationsPass
 
         // If we found a gap >= the required size and smaller than
         // previous best fit take it.
-        int64_t alignedOffset = align(currentOffset, offsetAlignment);
+        int64_t alignedOffset =
+            IREE::Util::align(currentOffset, offsetAlignment);
         if (alignedOffset + alignedSize <= reservation.staticOffset &&
             reservation.staticOffset - alignedOffset < bestOffsetFit) {
           bestOffset = alignedOffset;
@@ -199,7 +203,7 @@ class PackAllocationsPass
             currentOffset, reservation.staticOffset + reservation.staticSize);
       }
       if (bestOffset == UNASSIGNED) {
-        bestOffset = align(currentOffset, offsetAlignment);
+        bestOffset = IREE::Util::align(currentOffset, offsetAlignment);
       }
 
       // Reserve the memory.
@@ -222,7 +226,7 @@ class PackAllocationsPass
       highwaterMark = std::max(highwaterMark, bestOffset + alignedSize);
     }
 
-    highwaterMark = align(highwaterMark, rangeAlignment);
+    highwaterMark = IREE::Util::align(highwaterMark, rangeAlignment);
     return builder.createOrFold<AddIOp>(
         packOp.getLoc(), baseOffset,
         builder.createOrFold<ConstantIndexOp>(packOp.getLoc(), highwaterMark));
@@ -269,7 +273,8 @@ class PackAllocationsPass
     // reservation.
     Value offset = baseOffset;
     for (auto &sizeBucket : slicesBySize) {
-      auto sliceSize = align(loc, sizeBucket.first, rangeAlignment, builder);
+      auto sliceSize =
+          IREE::Util::align(loc, sizeBucket.first, rangeAlignment, builder);
       auto &slices = sizeBucket.second;
       std::stable_sort(slices.begin(), slices.end());
 
@@ -303,16 +308,16 @@ class PackAllocationsPass
           // Allocate a new bin for this slice.
           bins.push_back({offset, {}});
           targetBin = &bins.back();
-          offset =
-              align(loc, builder.createOrFold<AddIOp>(loc, offset, sliceSize),
-                    offsetAlignment, builder);
+          offset = IREE::Util::align(
+              loc, builder.createOrFold<AddIOp>(loc, offset, sliceSize),
+              offsetAlignment, builder);
         }
         targetBin->slices.push_back(slice);
         slice->packedOffset.replaceAllUsesWith(targetBin->offset);
       }
     }
 
-    return align(loc, offset, rangeAlignment, builder);
+    return IREE::Util::align(loc, offset, rangeAlignment, builder);
   }
 };
 
