@@ -553,7 +553,7 @@ static void tryToTieOperandsAndResults(
 // proper captures.
 // A later RematerializeDispatchConstants should be called to avoid passing
 // unnecessary constant arguments.
-static LogicalResult legalizeDispatchWorkgroupOperands(
+LogicalResult legalizeDispatchWorkgroupOperands(
     IREE::Flow::DispatchWorkgroupsOp dispatchOp) {
   Location loc = dispatchOp.getLoc();
   Region &region = dispatchOp.body();

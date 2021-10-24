@@ -18,11 +18,14 @@
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/SmallPtrSet.h"
 #include "llvm/ADT/StringExtras.h"
+#include "mlir/Dialect/Linalg/IR/LinalgOps.h"
+#include "mlir/Dialect/Linalg/Transforms/Transforms.h"
 #include "mlir/Dialect/MemRef/IR/MemRef.h"
 #include "mlir/Dialect/StandardOps/IR/Ops.h"
 #include "mlir/Dialect/StandardOps/Utils/Utils.h"
 #include "mlir/Dialect/Tensor/IR/Tensor.h"
 #include "mlir/IR/Attributes.h"
+#include "mlir/IR/BlockAndValueMapping.h"
 #include "mlir/IR/Builders.h"
 #include "mlir/IR/Matchers.h"
 #include "mlir/IR/OpDefinition.h"
@@ -32,11 +35,17 @@
 #include "mlir/IR/TypeUtilities.h"
 #include "mlir/IR/Value.h"
 #include "mlir/Support/LogicalResult.h"
+#include "mlir/Transforms/RegionUtils.h"
+
+#define DEBUG_TYPE "iree-flow-dispatch-linalg-on-tensors"
 
 namespace mlir {
 namespace iree_compiler {
 namespace IREE {
 namespace Flow {
+
+LogicalResult legalizeDispatchWorkgroupOperands(
+    IREE::Flow::DispatchWorkgroupsOp dispatchOp);
 
 //===----------------------------------------------------------------------===//
 // Folding utilities
@@ -239,11 +248,102 @@ void ExStreamFragmentOp::getCanonicalizationPatterns(
 //===----------------------------------------------------------------------===//
 // Dispatch ops
 //===----------------------------------------------------------------------===//
+namespace {
+
+/// Get shape of the tensor given the sizes as a list of `OpFoldResult`.
+static SmallVector<int64_t, 4> getShapeFromSizes(
+    ArrayRef<OpFoldResult> valueOrAttrList) {
+  return llvm::to_vector<4>(llvm::map_range(
+      valueOrAttrList, [&](OpFoldResult valueOrAttr) -> int64_t {
+        if (auto attr = valueOrAttr.dyn_cast<Attribute>()) {
+          return attr.cast<IntegerAttr>().getInt();
+        }
+        return ShapedType::kDynamicSize;
+      }));
+}
+
+/// Ties the results of streams to their operands when the stream operations are
+/// tied throughout the entire body.
+struct FuseTensorSlice : public OpRewritePattern<DispatchWorkgroupsOp> {
+  using OpRewritePattern<DispatchWorkgroupsOp>::OpRewritePattern;
+
+  LogicalResult matchAndRewrite(DispatchWorkgroupsOp dispatchOp,
+                                PatternRewriter &rewriter) const override {
+    assert(dispatchOp.getRegion().getBlocks().size() == 1 &&
+           "only one stream block supported");
+    bool canMerge = false;
+
+    OpBuilder::InsertionGuard g(rewriter);
+    rewriter.setInsertionPointToStart(&dispatchOp.getRegion().front());
+
+    // source value, slice's index in the op's operands
+    DenseMap<Value, SmallVector<IREE::Flow::TensorSliceOp>> sliceGroups;
+    DenseMap<Value, SmallVector<size_t>> argIdx;
+
+    for (auto it : llvm::enumerate(dispatchOp.operands())) {
+      Value v = it.value();
+      IREE::Flow::TensorReshapeOp reshapeOp =
+          v.getDefiningOp<IREE::Flow::TensorReshapeOp>();
+
+      IREE::Flow::TensorSliceOp sliceOp;
+      if (reshapeOp)
+        sliceOp = reshapeOp.source().getDefiningOp<IREE::Flow::TensorSliceOp>();
+
+      if (!sliceOp) sliceOp = v.getDefiningOp<IREE::Flow::TensorSliceOp>();
+
+      if (sliceOp) {
+        sliceGroups[sliceOp.source()].push_back(sliceOp);
+        argIdx[sliceOp.source()].push_back(it.index());
+      }
+    }
+
+    SmallVector<Operation *> clonedOps;
+    BlockAndValueMapping map;
+    for (auto iter : sliceGroups) {
+      if (iter.getSecond().size() == 1) continue;
+      canMerge = true;
+    }
+
+    if (!canMerge) return failure();
+
+    ImplicitLocOpBuilder b(dispatchOp.getLoc(), rewriter);
+    Value one = b.create<arith::ConstantIndexOp>(1);
+
+    for (auto iter : sliceGroups) {
+      if (iter.getSecond().size() == 1) continue;
+
+      Region &region = dispatchOp.body();
+      Block &block = region.front();
+
+      unsigned idx = 0;
+      Value linalgReshapeOp;
+      for (auto sliceOp : iter.getSecond()) {
+        SmallVector<Value, 4> strides(sliceOp.lengths().size(), one);
+        Operation *reshapeOp = *sliceOp.getResult().getUsers().begin();
+
+        auto tslice = b.create<tensor::ExtractSliceOp>(
+            reshapeOp->getResult(0).getType().cast<RankedTensorType>(),
+            sliceOp.source(), sliceOp.start_indices(), sliceOp.lengths(),
+            strides);
+
+        size_t id = argIdx[iter.getFirst()][idx++];
+        block.getArgument(id).replaceAllUsesWith(tslice);
+      }
+    }
+
+    (void)legalizeDispatchWorkgroupOperands(dispatchOp);
+
+    return success();
+  }
+};
+
+}  // namespace
 
 void DispatchWorkgroupsOp::getCanonicalizationPatterns(
     OwningRewritePatternList &results, MLIRContext *context) {
   results.insert<IREE::Util::ClosureOptimizationPattern<DispatchWorkgroupsOp>>(
       context);
+  results.insert<FuseTensorSlice>(context);
 }
 
 //===----------------------------------------------------------------------===//
